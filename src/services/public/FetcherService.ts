@@ -121,6 +121,7 @@ export class FetcherService {
 		try {
 			const txId = await generateTransactionId(url);
 			if (txId?.trim()) {
+				console.log(`Generated transaction id for header: ${txId}`);
 				headers['x-client-transaction-id'] = txId;
 			}
 		} catch (error) {
