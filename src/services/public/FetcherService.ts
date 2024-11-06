@@ -34,6 +34,9 @@ export class FetcherService {
 	/** The guest key to use for authenticating against Twitter API as guest. */
 	private readonly _guestKey?: string;
 
+	/** The transaction id (x-client-transaction-id) to use for interacting with Twitter API. */
+	private readonly _txId?: string;
+
 	/** The URL To the proxy server to use for all others. */
 	private readonly _proxyUrl?: URL;
 
@@ -53,6 +56,7 @@ export class FetcherService {
 		LogService.enabled = config?.logging ?? false;
 		this._apiKey = config?.apiKey;
 		this._guestKey = config?.guestKey;
+		this._txId = config?.txId;
 		this.userId = config?.apiKey ? AuthService.getUserId(config.apiKey) : undefined;
 		this.authProxyUrl = config?.authProxyUrl ?? config?.proxyUrl;
 		this._proxyUrl = config?.proxyUrl;
@@ -192,7 +196,10 @@ export class FetcherService {
 		const config = requests[resource](args);
 
 		// Setting additional request parameters
-		config.headers = { ...config.headers, ...cred.toHeader() };
+		config.headers = {
+			...config.headers,
+			...cred.toHeader(),
+			...(this._txId && { 'x-client-transaction-id': this._txId }) };
 		config.httpAgent = httpsAgent;
 		config.httpsAgent = httpsAgent;
 		config.timeout = this._timeout;

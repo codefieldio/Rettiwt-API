@@ -12,6 +12,9 @@ export interface IRettiwtConfig {
 	/** The guestKey (guest token) to use for guest access to Twitter API. */
 	guestKey?: string;
 
+	/** The transaction id (x-client-transaction-id) to use for access to Twitter API. */
+	txId?: string;
+
 	/**
 	 * Optional URL to proxy server to use for requests to Twitter API.
 	 *
