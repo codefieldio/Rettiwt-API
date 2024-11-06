@@ -1,6 +1,6 @@
 import https, { Agent } from 'https';
 
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { Auth, AuthCredential } from 'rettiwt-auth';
 
@@ -34,8 +34,8 @@ export class FetcherService {
 	/** The guest key to use for authenticating against Twitter API as guest. */
 	private readonly _guestKey?: string;
 
-	/** The transaction id (x-client-transaction-id) to use for interacting with Twitter API. */
-	private readonly _txId?: string;
+	/** Optional function for generating client transaction ids (x-client-transaction-id */
+	private readonly _txIdGeneratorFn?: (url: string) => Promise<string>;
 
 	/** The URL To the proxy server to use for all others. */
 	private readonly _proxyUrl?: URL;
@@ -56,7 +56,7 @@ export class FetcherService {
 		LogService.enabled = config?.logging ?? false;
 		this._apiKey = config?.apiKey;
 		this._guestKey = config?.guestKey;
-		this._txId = config?.txId;
+		this._txIdGeneratorFn = config?.txIdGeneratorFn;
 		this.userId = config?.apiKey ? AuthService.getUserId(config.apiKey) : undefined;
 		this.authProxyUrl = config?.authProxyUrl ?? config?.proxyUrl;
 		this._proxyUrl = config?.proxyUrl;
@@ -103,6 +103,30 @@ export class FetcherService {
 
 			return await new Auth({ proxyUrl: this.authProxyUrl }).getGuestCredential();
 		}
+	}
+
+	/**
+	 * Generates the x-client-transaction-id header for the request.
+	 */
+	private async getTransactionIdHeader(
+		url?: string,
+		generateTransactionId?: (url: string) => Promise<string>
+	): Promise<AxiosHeaders> {
+		const headers = new AxiosHeaders();
+
+		if (!generateTransactionId || !url?.trim()) {
+			return headers;
+		}
+
+		try {
+			const txId = await generateTransactionId(url);
+			if (txId?.trim()) {
+				headers['x-client-transaction-id'] = txId;
+			}
+		} catch (error) {
+			LogService.log(ELogActions.REQUEST, { target: 'TX_ID_GENERATION', error });
+		}
+		return headers;
 	}
 
 	/**
@@ -195,11 +219,15 @@ export class FetcherService {
 		// Getting request configuration
 		const config = requests[resource](args);
 
+		// Adding transaction id header
+		const txIdHeader = await this.getTransactionIdHeader(config.url, this._txIdGeneratorFn);
+
 		// Setting additional request parameters
 		config.headers = {
 			...config.headers,
 			...cred.toHeader(),
-			...(this._txId && { 'x-client-transaction-id': this._txId }) };
+			...txIdHeader
+		}
 		config.httpAgent = httpsAgent;
 		config.httpsAgent = httpsAgent;
 		config.timeout = this._timeout;
