@@ -35,7 +35,7 @@ export class FetcherService {
 	private readonly _guestKey?: string;
 
 	/** Optional function for generating client transaction ids (x-client-transaction-id */
-	private readonly _txIdGeneratorFn?: (url: string) => Promise<string>;
+	private readonly _txIdGeneratorFn?: (url: string, guestKey: string) => Promise<string>;
 
 	/** The URL To the proxy server to use for all others. */
 	private readonly _proxyUrl?: URL;
@@ -110,7 +110,7 @@ export class FetcherService {
 	 */
 	private async getTransactionIdHeader(
 		url?: string,
-		generateTransactionId?: (url: string) => Promise<string>
+		generateTransactionId?: (url: string, guestKey: string) => Promise<string>
 	): Promise<AxiosHeaders> {
 		const headers = new AxiosHeaders();
 
@@ -119,7 +119,7 @@ export class FetcherService {
 		}
 
 		try {
-			const txId = await generateTransactionId(url);
+			const txId = await generateTransactionId(url, this._guestKey!);
 			if (txId?.trim()) {
 				console.log(`Generated transaction id for header: ${txId}`);
 				headers['x-client-transaction-id'] = txId;

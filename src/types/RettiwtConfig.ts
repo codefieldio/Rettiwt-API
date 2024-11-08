@@ -13,7 +13,7 @@ export interface IRettiwtConfig {
 	guestKey?: string;
 
 	/** Optional function for generating client transaction ids (x-client-transaction-id) */
-	txIdGeneratorFn?: (url: string) => Promise<string>;
+	txIdGeneratorFn?: (url: string, guestKey: string) => Promise<string>;
 
 	/**
 	 * Optional URL to proxy server to use for requests to Twitter API.
