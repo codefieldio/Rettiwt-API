@@ -18,6 +18,7 @@ import { ErrorService } from '../internal/ErrorService';
 import { LogService } from '../internal/LogService';
 
 import { AuthService } from './AuthService';
+import { TxIdGeneratorOptions } from '../../types/TxIdGeneratorOptions';
 
 /**
  * The base service that handles all HTTP requests.
@@ -35,7 +36,7 @@ export class FetcherService {
 	private readonly _guestKey?: string;
 
 	/** Optional function for generating client transaction ids (x-client-transaction-id */
-	private readonly _txIdGeneratorFn?: (url: string, guestKey: string) => Promise<string>;
+	private readonly _txIdGeneratorFn?: (options: TxIdGeneratorOptions) => Promise<string>;
 
 	/** The URL To the proxy server to use for all others. */
 	private readonly _proxyUrl?: URL;
@@ -110,7 +111,7 @@ export class FetcherService {
 	 */
 	private async getTransactionIdHeader(
 		url?: string,
-		generateTransactionId?: (url: string, guestKey: string) => Promise<string>
+		generateTransactionId?: (options: TxIdGeneratorOptions) => Promise<string>
 	): Promise<AxiosHeaders> {
 		const headers = new AxiosHeaders();
 
@@ -119,7 +120,7 @@ export class FetcherService {
 		}
 
 		try {
-			const txId = await generateTransactionId(url, this._guestKey!);
+			const txId = await generateTransactionId({url, guestKey: this._guestKey!});
 			if (txId?.trim()) {
 				console.log(`Generated transaction id for header: ${txId}`);
 				headers['x-client-transaction-id'] = txId;
