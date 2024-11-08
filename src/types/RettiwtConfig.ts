@@ -1,4 +1,5 @@
 import { IErrorHandler } from './ErrorHandler';
+import { TxIdGeneratorOptions } from './TxIdGeneratorOptions';
 
 /**
  * The configuration for initializing a new Rettiwt instance.
@@ -13,7 +14,7 @@ export interface IRettiwtConfig {
 	guestKey?: string;
 
 	/** Optional function for generating client transaction ids (x-client-transaction-id) */
-	txIdGeneratorFn?: (url: string, guestKey: string) => Promise<string>;
+	txIdGeneratorFn?: (options: TxIdGeneratorOptions) => Promise<string>;
 
 	/**
 	 * Optional URL to proxy server to use for requests to Twitter API.

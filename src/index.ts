@@ -34,6 +34,7 @@ export * from './services/public/UserService';
 // TYPES
 export * from './types/RettiwtConfig';
 export * from './types/ErrorHandler';
+export * from './types/TxIdGeneratorOptions';
 
 // RAW TYPES
 export {
