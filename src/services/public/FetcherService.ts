@@ -120,9 +120,11 @@ export class FetcherService {
 		}
 
 		try {
+			console.log(`[${Math.floor(Date.now() / 60000)}] Rettiwt requesting transaction id...`);
 			const txId = await generateTransactionId({url, guestKey: this._guestKey!});
 			if (txId?.trim()) {
-				console.log(`Generated transaction id for header: ${txId}`);
+				console.log(`[${Math.floor(Date.now() / 60000)}] Rettiwt received transaction id ${txId.substring(0, 6)}`);
+				console.log(`Attached transaction id to request [ ${txId} ]`);
 				headers['x-client-transaction-id'] = txId;
 			}
 		} catch (error) {
